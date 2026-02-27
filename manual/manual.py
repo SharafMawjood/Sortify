@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from engine import load_config, sort_file, sort_folder, safe_move
+from engine import load_config, sort_file, sort_folder, safe_move, get_file_metadata, match_category
 
 DEFAULT_CONFIG = Path(__file__).resolve().parent / "config.json"
 
@@ -71,8 +71,9 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
                     pass
             else:
                 if custom_target:
-                    dest = safe_move(entry, custom_target)
-                    print(f"  📁 {entry.name}  →  {dest}")
+                    dest_dir = custom_target / "Folders"
+                    dest = safe_move(entry, dest_dir)
+                    print(f"  📁 {entry.name}  →  [Folders] {dest}")
                 else:
                     cat, dest = sort_folder(entry, config, base_dir=target_dir)
                     print(f"  📁 {entry.name}  →  [{cat}] {dest}")
@@ -85,8 +86,11 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
 def _sort_single_file(filepath: Path, config: dict, custom_target: Path | None, base_dir: Path | None = None) -> int:
     try:
         if custom_target:
-            dest = safe_move(filepath, custom_target)
-            print(f"  📄 {filepath.name}  →  {dest}")
+            metadata = get_file_metadata(filepath)
+            category = match_category(metadata, config["routing"])
+            dest_dir = custom_target / category
+            dest = safe_move(filepath, dest_dir)
+            print(f"  📄 {filepath.name}  →  [{category}] {dest}")
         else:
             cat, dest = sort_file(filepath, config, base_dir=base_dir)
             print(f"  📄 {filepath.name}  →  [{cat}] {dest}")

@@ -79,6 +79,7 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
                 moved += 1
 
     print(f"\n  ✅  Done! {moved} item(s) routed.\n")
+    input("  Press Enter to exit...")
 
 
 def _sort_single_file(filepath: Path, config: dict, custom_target: Path | None, base_dir: Path | None = None) -> int:
@@ -132,6 +133,7 @@ def sync_sort(config: dict) -> None:
             _remove_empty_dirs(cat_path)
 
     print(f"\n  ✅  Sync complete! {moved} file(s) re-routed.\n")
+    input("  Press Enter to exit...")
 
 
 def main() -> None:

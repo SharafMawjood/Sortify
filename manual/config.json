@@ -1,6 +1,6 @@
 {
     "routing": {
-        "Videos 2026": {
+        "Videos": {
             "path": "D:\\Archive\\Videos",
             "extensions": [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm"],
             "year": null,

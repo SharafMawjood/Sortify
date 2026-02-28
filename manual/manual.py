@@ -39,13 +39,17 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
     print("  [1] Use default routing (from config.json)")
     print("  [2] Custom target (move everything to one folder)\n")
 
-    choice = input("  Your choice (1/2): ").strip()
+    choice = input("  Your choice (1/2) [default=2]: ").strip()
 
     custom_target: Path | None = None
-    if choice == "2":
+    if choice in ("2", ""):
         raw = input("  Enter the custom destination path: ").strip()
         custom_target = Path(raw)
         custom_target.mkdir(parents=True, exist_ok=True)
+
+        for category_name in config["routing"]:
+            (custom_target / category_name).mkdir(parents=True, exist_ok=True)
+        print(f"\n  📂  Created category folders inside: {custom_target}")
 
     flatten = input("\n  Flatten subfolders? (y/n): ").strip().lower() == "y"
 

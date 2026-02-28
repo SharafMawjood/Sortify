@@ -4,59 +4,59 @@
     ],
 
     "routing": {
-        "Videos 2026": {
+        "Videos": {
             "path": "D:\\Downloads\\Videos",
             "extensions": [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm"],
-            "year": null,
+            "year": true,
             "min_gb": null,
             "max_gb": 2.0
         },
         "Movies": {
             "path": "D:\\Downloads\\Movies",
             "extensions": [".mp4", ".mkv", ".avi", ".mov", ".wmv"],
-            "year": null,
+            "year": false,
             "min_gb": 2.0,
             "max_gb": null
         },
         "Music": {
             "path": "D:\\Downloads\\Music",
             "extensions": [".mp3", ".flac", ".wav", ".aac", ".ogg", ".wma"],
-            "year": null,
+            "year": false,
             "min_gb": null,
             "max_gb": null
         },
         "Images": {
             "path": "D:\\Downloads\\Images",
             "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp", ".ico", ".tiff"],
-            "year": null,
+            "year": false,
             "min_gb": null,
             "max_gb": null
         },
         "Documents": {
             "path": "D:\\Downloads\\Documents",
             "extensions": [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".csv", ".rtf"],
-            "year": null,
+            "year": false,
             "min_gb": null,
             "max_gb": null
         },
-        "Archives": {
-            "path": "D:\\Downloads\\Archives",
+        "Compressed": {
+            "path": "D:\\Downloads\\Compressed",
             "extensions": [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2"],
-            "year": null,
+            "year": false,
             "min_gb": null,
             "max_gb": null
         },
         "Executables": {
             "path": "D:\\Downloads\\Executables",
             "extensions": [".exe", ".msi", ".bat", ".cmd", ".ps1"],
-            "year": null,
+            "year": false,
             "min_gb": null,
             "max_gb": null
         },
         "Others": {
             "path": "D:\\Downloads\\Others",
             "extensions": [],
-            "year": null,
+            "year": false,
             "min_gb": null,
             "max_gb": null
         }

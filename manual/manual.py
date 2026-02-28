@@ -37,11 +37,14 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
     print(f"\n  Target directory: {target_dir}\n")
 
     print("  [1] Use default routing (from config.json)")
-    print("  [2] Custom target (move everything to one folder)\n")
+    print("  [2] Custom target (move everything to one folder)")
+    print("  [3] Revert (extract all files from subfolders to a single destination)\n")
 
-    choice = input("  Your choice (1/2) [default=2]: ").strip()
+    choice = input("  Your choice (1/2/3) [default=2]: ").strip()
 
     custom_target: Path | None = None
+    revert_target: Path | None = None
+    
     if choice in ("2", ""):
         raw = input("  Enter the custom destination path: ").strip()
         custom_target = Path(raw)
@@ -50,13 +53,35 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
         for category_name in config["routing"]:
             (custom_target / category_name).mkdir(parents=True, exist_ok=True)
         print(f"\n  📂  Created category folders inside: {custom_target}")
+    elif choice == "3":
+        raw = input("  Enter the destination path to revert all files into: ").strip()
+        revert_target = Path(raw)
+        revert_target.mkdir(parents=True, exist_ok=True)
 
-    flatten = input("\n  Flatten subfolders? (y/n): ").strip().lower() == "y"
+    flatten = False
+    if choice != "3":
+        flatten = input("\n  Flatten subfolders? (y/n): ").strip().lower() == "y"
 
-    print("\n  ⏳  Sorting in progress…\n")
+    print("\n  ⏳  Processing…\n")
 
     entries = sorted(target_dir.iterdir())
     moved = 0
+    
+    if choice == "3":
+        all_files = _collect_all_files(target_dir)
+        for f in all_files:
+            try:
+                dest = safe_move(f, revert_target)
+                print(f"  ⏪ {f.name}  →  [Reverted] {dest}")
+                moved += 1
+            except Exception as exc:
+                print(f"  ⚠  Failed to revert {f.name}: {exc}")
+        
+        # Clean up the now empty organized folders
+        _remove_empty_dirs(target_dir)
+        print(f"\n  ✅  Done! {moved} item(s) reverted to {revert_target}.\n")
+        input("  Press Enter to exit...")
+        return
 
     for entry in entries:
         if entry.is_file():
@@ -93,6 +118,10 @@ def _sort_single_file(filepath: Path, config: dict, custom_target: Path | None, 
             metadata = get_file_metadata(filepath)
             category = match_category(metadata, config["routing"])
             dest_dir = custom_target / category
+            use_year_subfolder = config["routing"].get(category, {}).get("year", False)
+            if use_year_subfolder:
+                dest_dir = dest_dir / str(metadata["year"])
+
             dest = safe_move(filepath, dest_dir)
             print(f"  📄 {filepath.name}  →  [{category}] {dest}")
         else:

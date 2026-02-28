@@ -51,10 +51,9 @@ def _rule_matches(metadata: dict, rules: dict) -> bool:
         if metadata["extension"] not in extensions:
             return False
 
-    year = rules.get("year")
-    if year is not None:
-        if metadata["year"] != year:
-            return False
+    year = rules.get("year", False)
+    # We no longer filter by year matching. 
+    # If year is True, it will be used in sort_file to create a subfolder.
 
     min_gb = rules.get("min_gb")
     if min_gb is not None:
@@ -100,6 +99,12 @@ def sort_file(filepath: str | Path, config: dict, base_dir: str | Path | None = 
     routing = config["routing"]
     category = match_category(metadata, routing)
     dest_dir = Path(routing[category]["path"])
+    
+    # If the routing rule specifies year=True, create a subfolder for the year
+    use_year_subfolder = routing[category].get("year", False)
+    if use_year_subfolder:
+        dest_dir = dest_dir / str(metadata["year"])
+        
     if base_dir and not dest_dir.is_absolute():
         dest_dir = Path(base_dir) / dest_dir
     final = safe_move(filepath, dest_dir)

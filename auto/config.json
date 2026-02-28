@@ -74,6 +74,13 @@
             "min_gb": null,
             "max_gb": null
         },
+        "Torrent": {
+            "path": "D:\\Downloads\\Torrent",
+            "extensions": [".torrent"],
+            "year": false,
+            "min_gb": null,
+            "max_gb": null
+        },
         "Others": {
             "path": "D:\\Downloads\\Others",
             "extensions": [],

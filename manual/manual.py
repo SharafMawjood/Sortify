@@ -68,14 +68,44 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
     moved = 0
     
     if choice == "3":
-        all_files = _collect_all_files(target_dir)
-        for f in all_files:
-            try:
-                dest = safe_move(f, revert_target)
-                print(f"  ⏪ {f.name}  →  [Reverted] {dest}")
-                moved += 1
-            except Exception as exc:
-                print(f"  ⚠  Failed to revert {f.name}: {exc}")
+        # First, revert intact folders from the "Folders" category
+        folders_cat = target_dir / "Folders"
+        if folders_cat.is_dir():
+            for item in folders_cat.iterdir():
+                if item.resolve() == revert_target.resolve():
+                    continue
+                try:
+                    dest = safe_move(item, revert_target)
+                    print(f"  ⏪ {item.name}  →  [Reverted Intact] {dest}")
+                    moved += 1
+                except Exception as exc:
+                    print(f"  ⚠  Failed to revert {item.name}: {exc}")
+
+        # Then, revert all individual files from the rest of the structure
+        for root, dirs, filenames in os.walk(target_dir):
+            root_p = Path(root).resolve()
+            rev_p = revert_target.resolve()
+            
+            # Skip the destination folder to avoid recursion
+            if root_p == rev_p or rev_p in root_p.parents:
+                dirs.clear()
+                continue
+                
+            # Skip the Folders category as it's already been processed above
+            if folders_cat.is_dir():
+                fcat_p = folders_cat.resolve()
+                if root_p == fcat_p or fcat_p in root_p.parents:
+                    dirs.clear()
+                    continue
+                    
+            for fn in filenames:
+                f = Path(root) / fn
+                try:
+                    dest = safe_move(f, revert_target)
+                    print(f"  ⏪ {f.name}  →  [Reverted] {dest}")
+                    moved += 1
+                except Exception as exc:
+                    print(f"  ⚠  Failed to revert {f.name}: {exc}")
         
         # Clean up the now empty organized folders
         _remove_empty_dirs(target_dir)

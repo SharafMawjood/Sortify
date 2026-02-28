@@ -49,10 +49,7 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
         raw = input("  Enter the custom destination path: ").strip().strip('"')
         custom_target = Path(raw)
         custom_target.mkdir(parents=True, exist_ok=True)
-
-        for category_name in config["routing"]:
-            (custom_target / category_name).mkdir(parents=True, exist_ok=True)
-        print(f"\n  📂  Created category folders inside: {custom_target}")
+        print(f"\n  📂  Custom destination set to: {custom_target}")
     elif choice == "3":
         raw = input("  Enter the destination path to revert all files into: ").strip().strip('"')
         revert_target = Path(raw)

@@ -16,7 +16,7 @@
         },
         "Music": {
             "path": "D:\\Archive\\Music",
-            "extensions": [".mp3", ".flac", ".wav", ".aac", ".ogg", ".wma"],
+            "extensions": [".mp3", ".flac", ".wav", ".aac", ".ogg", ".wma", ".m4a"],
             "year": false,
             "min_gb": null,
             "max_gb": null
@@ -31,7 +31,7 @@
         "Documents": {
             "path": "D:\\Archive\\Documents",
             "extensions": [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".csv", ".rtf"],
-            "year": false,
+            "year": true,
             "min_gb": null,
             "max_gb": null
         },
@@ -45,6 +45,27 @@
         "Executables": {
             "path": "D:\\Archive\\Executables",
             "extensions": [".exe", ".msi", ".bat", ".cmd", ".ps1"],
+            "year": false,
+            "min_gb": null,
+            "max_gb": null
+        },
+        "PSD": {
+            "path": "D:\\Archive\\PSD",
+            "extensions": [".psd", ".psb"],
+            "year": false,
+            "min_gb": null,
+            "max_gb": null
+        },
+        "Python": {
+            "path": "D:\\Archive\\Python",
+            "extensions": [".py", ".pyw"],
+            "year": false,
+            "min_gb": null,
+            "max_gb": null
+        },
+        "HTML": {
+            "path": "D:\\Archive\\HTML",
+            "extensions": [".html", ".htm"],
             "year": false,
             "min_gb": null,
             "max_gb": null

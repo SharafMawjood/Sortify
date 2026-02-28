@@ -20,7 +20,7 @@
         },
         "Music": {
             "path": "D:\\Downloads\\Music",
-            "extensions": [".mp3", ".flac", ".wav", ".aac", ".ogg", ".wma"],
+            "extensions": [".mp3", ".flac", ".wav", ".aac", ".ogg", ".wma", ".m4a"],
             "year": false,
             "min_gb": null,
             "max_gb": null
@@ -49,6 +49,27 @@
         "Executables": {
             "path": "D:\\Downloads\\Executables",
             "extensions": [".exe", ".msi", ".bat", ".cmd", ".ps1"],
+            "year": false,
+            "min_gb": null,
+            "max_gb": null
+        },
+        "PSD": {
+            "path": "D:\\Downloads\\PSD",
+            "extensions": [".psd", ".psb"],
+            "year": false,
+            "min_gb": null,
+            "max_gb": null
+        },
+        "Python": {
+            "path": "D:\\Downloads\\Python",
+            "extensions": [".py", ".pyw"],
+            "year": false,
+            "min_gb": null,
+            "max_gb": null
+        },
+        "HTML": {
+            "path": "D:\\Downloads\\HTML",
+            "extensions": [".html", ".htm"],
             "year": false,
             "min_gb": null,
             "max_gb": null

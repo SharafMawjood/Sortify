@@ -104,6 +104,13 @@ def sort_file(filepath: str | Path, config: dict, base_dir: str | Path | None = 
     use_year_subfolder = routing[category].get("year", False)
     if use_year_subfolder:
         dest_dir = dest_dir / str(metadata["year"])
+
+    # If the routing rule specifies file_type=True, create an extension subfolder inside it
+    use_type_subfolder = routing[category].get("file_type", False)
+    if use_type_subfolder:
+        ext = metadata["extension"].lstrip(".")
+        ext_folder = ext.upper() if ext else "UNKNOWN"
+        dest_dir = dest_dir / ext_folder
         
     if base_dir and not dest_dir.is_absolute():
         dest_dir = Path(base_dir) / dest_dir

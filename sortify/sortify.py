@@ -46,7 +46,7 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
     revert_target: Path | None = None
     
     if choice in ("2", ""):
-        raw = input("  Enter the custom destination path: ").strip()
+        raw = input("  Enter the custom destination path: ").strip().strip('"')
         custom_target = Path(raw)
         custom_target.mkdir(parents=True, exist_ok=True)
 
@@ -54,7 +54,7 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
             (custom_target / category_name).mkdir(parents=True, exist_ok=True)
         print(f"\n  📂  Created category folders inside: {custom_target}")
     elif choice == "3":
-        raw = input("  Enter the destination path to revert all files into: ").strip()
+        raw = input("  Enter the destination path to revert all files into: ").strip().strip('"')
         revert_target = Path(raw)
         revert_target.mkdir(parents=True, exist_ok=True)
 
@@ -151,6 +151,12 @@ def _sort_single_file(filepath: Path, config: dict, custom_target: Path | None, 
             use_year_subfolder = config["routing"].get(category, {}).get("year", False)
             if use_year_subfolder:
                 dest_dir = dest_dir / str(metadata["year"])
+
+            use_type_subfolder = config["routing"].get(category, {}).get("file_type", False)
+            if use_type_subfolder:
+                ext = metadata["extension"].lstrip(".")
+                ext_folder = ext.upper() if ext else "UNKNOWN"
+                dest_dir = dest_dir / ext_folder
 
             dest = safe_move(filepath, dest_dir)
             print(f"  📄 {filepath.name}  →  [{category}] {dest}")

@@ -4,6 +4,7 @@
             "path": "D:\\Archive\\Videos",
             "extensions": [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm"],
             "year": true,
+            "file_type": true,
             "min_gb": null,
             "max_gb": 2.0
         },
@@ -11,6 +12,7 @@
             "path": "D:\\Archive\\Movies",
             "extensions": [".mp4", ".mkv", ".avi", ".mov", ".wmv"],
             "year": false,
+            "file_type": false,
             "min_gb": 2.0,
             "max_gb": null
         },
@@ -18,6 +20,7 @@
             "path": "D:\\Archive\\Music",
             "extensions": [".mp3", ".flac", ".wav", ".aac", ".ogg", ".wma", ".m4a"],
             "year": false,
+            "file_type": false,
             "min_gb": null,
             "max_gb": null
         },
@@ -25,6 +28,7 @@
             "path": "D:\\Archive\\Images",
             "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp", ".ico", ".tiff"],
             "year": false,
+            "file_type": false,
             "min_gb": null,
             "max_gb": null
         },
@@ -32,6 +36,7 @@
             "path": "D:\\Archive\\Documents",
             "extensions": [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".csv", ".rtf"],
             "year": true,
+            "file_type": false,
             "min_gb": null,
             "max_gb": null
         },
@@ -39,6 +44,7 @@
             "path": "D:\\Archive\\Compressed",
             "extensions": [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2"],
             "year": false,
+            "file_type": false,
             "min_gb": null,
             "max_gb": null
         },
@@ -46,6 +52,7 @@
             "path": "D:\\Archive\\Executables",
             "extensions": [".exe", ".msi", ".bat", ".cmd", ".ps1"],
             "year": false,
+            "file_type": false,
             "min_gb": null,
             "max_gb": null
         },
@@ -53,6 +60,7 @@
             "path": "D:\\Archive\\PSD",
             "extensions": [".psd", ".psb"],
             "year": false,
+            "file_type": false,
             "min_gb": null,
             "max_gb": null
         },
@@ -60,6 +68,7 @@
             "path": "D:\\Archive\\Python",
             "extensions": [".py", ".pyw"],
             "year": false,
+            "file_type": false,
             "min_gb": null,
             "max_gb": null
         },
@@ -67,6 +76,7 @@
             "path": "D:\\Archive\\HTML",
             "extensions": [".html", ".htm"],
             "year": false,
+            "file_type": false,
             "min_gb": null,
             "max_gb": null
         },
@@ -74,6 +84,7 @@
             "path": "D:\\Archive\\Torrent",
             "extensions": [".torrent"],
             "year": false,
+            "file_type": false,
             "min_gb": null,
             "max_gb": null
         },
@@ -81,6 +92,7 @@
             "path": "D:\\Archive\\Folders",
             "extensions": [],
             "year": false,
+            "file_type": false,
             "min_gb": null,
             "max_gb": null
         },
@@ -88,6 +100,7 @@
             "path": "D:\\Archive\\Others",
             "extensions": [],
             "year": false,
+            "file_type": false,
             "min_gb": null,
             "max_gb": null
         }

@@ -40,12 +40,15 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
     print("  [2] Custom target (move everything to one folder)")
     print("  [3] Revert (extract all files from subfolders to a single destination)\n")
 
-    choice = input("  Your choice (1/2/3) [default=2]: ").strip()
+    choice = input("  Your choice (1/2/3) [default=1]: ").strip()
+
+    if not choice:
+        choice = "1"
 
     custom_target: Path | None = None
     revert_target: Path | None = None
     
-    if choice in ("2", ""):
+    if choice == "2":
         raw = input("  Enter the custom destination path: ").strip().strip('"')
         custom_target = Path(raw)
         custom_target.mkdir(parents=True, exist_ok=True)
@@ -57,7 +60,7 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
 
     flatten = False
     if choice != "3":
-        flatten = input("\n  Flatten subfolders? (y/n): ").strip().lower() == "y"
+        flatten = input("\n  Flatten subfolders? (y/n) [default=n]: ").strip().lower() == "y"
 
     print("\n  ⏳  Processing…\n")
 
@@ -73,8 +76,9 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
                     continue
                 try:
                     dest = safe_move(item, revert_target)
-                    print(f"  ⏪ {item.name}  →  [Reverted Intact] {dest}")
-                    moved += 1
+                    if dest:
+                        print(f"  ⏪ {item.name}  →  [Reverted Intact] {dest}")
+                        moved += 1
                 except Exception as exc:
                     print(f"  ⚠  Failed to revert {item.name}: {exc}")
 
@@ -99,8 +103,9 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
                 f = Path(root) / fn
                 try:
                     dest = safe_move(f, revert_target)
-                    print(f"  ⏪ {f.name}  →  [Reverted] {dest}")
-                    moved += 1
+                    if dest:
+                        print(f"  ⏪ {f.name}  →  [Reverted] {dest}")
+                        moved += 1
                 except Exception as exc:
                     print(f"  ⚠  Failed to revert {f.name}: {exc}")
         
@@ -129,11 +134,14 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
                 if custom_target:
                     dest_dir = custom_target / "Folders"
                     dest = safe_move(entry, dest_dir)
-                    print(f"  📁 {entry.name}  →  [Folders] {dest}")
+                    if dest:
+                        print(f"  📁 {entry.name}  →  [Folders] {dest}")
+                        moved += 1
                 else:
                     cat, dest = sort_folder(entry, config, base_dir=target_dir)
-                    print(f"  📁 {entry.name}  →  [{cat}] {dest}")
-                moved += 1
+                    if dest:
+                        print(f"  📁 {entry.name}  →  [{cat}] {dest}")
+                        moved += 1
 
     print(f"\n  ✅  Done! {moved} item(s) routed.\n")
     input("  Press Enter to exit...")
@@ -149,18 +157,37 @@ def _sort_single_file(filepath: Path, config: dict, custom_target: Path | None, 
             if use_year_subfolder:
                 dest_dir = dest_dir / str(metadata["year"])
 
-            use_type_subfolder = config["routing"].get(category, {}).get("file_type", False)
-            if use_type_subfolder:
+            file_type_setting = config["routing"].get(category, {}).get("file_type", 0)
+            
+            if file_type_setting == 1:
                 ext = metadata["extension"].lstrip(".")
                 ext_folder = ext.upper() if ext else "UNKNOWN"
                 dest_dir = dest_dir / ext_folder
+                
+            elif file_type_setting == 2:
+                ext = metadata["extension"]
+                file_groups = config["routing"].get(category, {}).get("extensions", {})
+                group_folder = "Other Types"
+                
+                if isinstance(file_groups, dict):
+                    for group_name, exts in file_groups.items():
+                        if ext in exts:
+                            group_folder = group_name
+                            break
+                        
+                dest_dir = dest_dir / group_folder
 
             dest = safe_move(filepath, dest_dir)
-            print(f"  📄 {filepath.name}  →  [{category}] {dest}")
+            if dest:
+                print(f"  📄 {filepath.name}  →  [{category}] {dest}")
+                return 1
+            return 0
         else:
             cat, dest = sort_file(filepath, config, base_dir=base_dir)
-            print(f"  📄 {filepath.name}  →  [{cat}] {dest}")
-        return 1
+            if dest:
+                print(f"  📄 {filepath.name}  →  [{cat}] {dest}")
+                return 1
+            return 0
     except Exception as exc:
         print(f"  ⚠  Failed to move {filepath.name}: {exc}")
         return 0
@@ -191,7 +218,7 @@ def sync_sort(config: dict) -> None:
     for f in all_files:
         try:
             cat, dest = sort_file(f, config)
-            if dest.parent != f.parent:
+            if dest and dest.parent != f.parent:
                 print(f"  🔄 {f.name}  →  [{cat}] {dest}")
                 moved += 1
         except Exception as exc:

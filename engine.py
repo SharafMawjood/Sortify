@@ -46,7 +46,15 @@ def match_category(metadata: dict, routing: dict) -> str:
 
 
 def _rule_matches(metadata: dict, rules: dict) -> bool:
-    extensions = rules.get("extensions", [])
+    extensions_raw = rules.get("extensions", [])
+    extensions = []
+    
+    if isinstance(extensions_raw, dict):
+        for exts in extensions_raw.values():
+            extensions.extend(exts)
+    elif isinstance(extensions_raw, list):
+        extensions = extensions_raw
+
     if extensions:
         if metadata["extension"] not in extensions:
             return False
@@ -68,7 +76,7 @@ def _rule_matches(metadata: dict, rules: dict) -> bool:
     return True
 
 
-def safe_move(src: str | Path, dest_dir: str | Path) -> Path:
+def safe_move(src: str | Path, dest_dir: str | Path) -> Path | None:
     src = Path(src)
     dest_dir = Path(dest_dir)
     dest_dir.mkdir(parents=True, exist_ok=True)
@@ -86,11 +94,15 @@ def safe_move(src: str | Path, dest_dir: str | Path) -> Path:
                 break
             counter += 1
 
-    shutil.move(str(src), str(dest))
-    return dest
+    try:
+        shutil.move(str(src), str(dest))
+        return dest
+    except PermissionError:
+        print(f"⚠️ Skipped locked file: {src.name}")
+        return None
 
 
-def sort_file(filepath: str | Path, config: dict, base_dir: str | Path | None = None) -> tuple[str, Path]:
+def sort_file(filepath: str | Path, config: dict, base_dir: str | Path | None = None) -> tuple[str, Path | None]:
     filepath = Path(filepath)
     if not filepath.is_file():
         raise ValueError(f"Not a file: {filepath}")
@@ -105,20 +117,35 @@ def sort_file(filepath: str | Path, config: dict, base_dir: str | Path | None = 
     if use_year_subfolder:
         dest_dir = dest_dir / str(metadata["year"])
 
-    # If the routing rule specifies file_type=True, create an extension subfolder inside it
-    use_type_subfolder = routing[category].get("file_type", False)
-    if use_type_subfolder:
+    # Determine file grouping based on file_type parameter (0, 1, or 2)
+    file_type_setting = routing[category].get("file_type", 0)
+    
+    # 1: Extension-based subfolder
+    if file_type_setting == 1:
         ext = metadata["extension"].lstrip(".")
         ext_folder = ext.upper() if ext else "UNKNOWN"
         dest_dir = dest_dir / ext_folder
         
+    # 2: Semantic Grouping subfolder
+    elif file_type_setting == 2:
+        ext = metadata["extension"]
+        file_groups = routing[category].get("extensions", {})
+        group_folder = "Other Types"  # Default fallback
+        
+        if isinstance(file_groups, dict):
+            for group_name, exts in file_groups.items():
+                if ext in exts:
+                    group_folder = group_name
+                    break
+                
+        dest_dir = dest_dir / group_folder
     if base_dir and not dest_dir.is_absolute():
         dest_dir = Path(base_dir) / dest_dir
     final = safe_move(filepath, dest_dir)
     return category, final
 
 
-def sort_folder(folderpath: str | Path, config: dict, base_dir: str | Path | None = None) -> tuple[str, Path]:
+def sort_folder(folderpath: str | Path, config: dict, base_dir: str | Path | None = None) -> tuple[str, Path | None]:
     folderpath = Path(folderpath)
     if not folderpath.is_dir():
         raise ValueError(f"Not a directory: {folderpath}")

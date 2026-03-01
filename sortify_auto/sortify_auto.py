@@ -45,9 +45,10 @@ class SortingHandler(FileSystemEventHandler):
 
         try:
             category, dest = sort_file(p, self.config)
-            msg = f"{p.name}  →  [{category}]"
-            print(f"  📄 {msg}  ({dest})")
-            _notify("Sortify — File Sorted", msg)
+            if dest:
+                msg = f"{p.name}  →  [{category}]"
+                print(f"  📄 {msg}  ({dest})")
+                _notify("Sortify — File Sorted", msg)
         except Exception as exc:
             print(f"  ⚠  Error sorting {p.name}: {exc}")
 

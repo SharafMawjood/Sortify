@@ -7,8 +7,8 @@
         "Videos": {
             "path": "D:\\Downloads\\Videos",
             "extensions": [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm"],
-            "year": true,
-            "file_type": true,
+            "year": false,
+            "file_type": 0,
             "min_gb": null,
             "max_gb": 2.0
         },
@@ -16,7 +16,7 @@
             "path": "D:\\Downloads\\Movies",
             "extensions": [".mp4", ".mkv", ".avi", ".mov", ".wmv"],
             "year": false,
-            "file_type": false,
+            "file_type": 0,
             "min_gb": 2.0,
             "max_gb": null
         },
@@ -24,23 +24,29 @@
             "path": "D:\\Downloads\\Music",
             "extensions": [".mp3", ".flac", ".wav", ".aac", ".ogg", ".wma", ".m4a"],
             "year": false,
-            "file_type": false,
+            "file_type": 0,
             "min_gb": null,
             "max_gb": null
         },
         "Images": {
             "path": "D:\\Downloads\\Images",
-            "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp", ".ico", ".tiff"],
+            "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp", ".ico", ".tiff", ".heic", ".heif"],
             "year": false,
-            "file_type": false,
+            "file_type": 0,
             "min_gb": null,
             "max_gb": null
         },
         "Documents": {
             "path": "D:\\Downloads\\Documents",
-            "extensions": [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".csv", ".rtf"],
+            "extensions": {
+                "Word Documents": [".doc", ".docx", ".rtf"],
+                "Spreadsheets": [".xls", ".xlsx", ".csv"],
+                "Presentations": [".ppt", ".pptx", ".potx", ".ppsx", ".pptm", ".potm", ".ppsm"],
+                "PDFs": [".pdf"],
+                "Text Files": [".txt"]
+            },
             "year": false,
-            "file_type": false,
+            "file_type": 2,
             "min_gb": null,
             "max_gb": null
         },
@@ -48,7 +54,7 @@
             "path": "D:\\Downloads\\Compressed",
             "extensions": [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2"],
             "year": false,
-            "file_type": false,
+            "file_type": 0,
             "min_gb": null,
             "max_gb": null
         },
@@ -56,23 +62,23 @@
             "path": "D:\\Downloads\\Executables",
             "extensions": [".exe", ".msi", ".bat", ".cmd", ".ps1"],
             "year": false,
-            "file_type": false,
+            "file_type": 0,
             "min_gb": null,
             "max_gb": null
         },
-        "PSD": {
-            "path": "D:\\Downloads\\PSD",
-            "extensions": [".psd", ".psb"],
+        "Creative": {
+            "path": "D:\\Downloads\\Creative",
+            "extensions": [".psd", ".psb", ".prproj", ".aep", ".aet", ".ai", ".eps", ".lrcat"],
             "year": false,
-            "file_type": false,
+            "file_type": 0,
             "min_gb": null,
             "max_gb": null
         },
-        "Python": {
-            "path": "D:\\Downloads\\Python",
-            "extensions": [".py", ".pyw"],
+        "Dev": {
+            "path": "D:\\Downloads\\Dev",
+            "extensions": [".py", ".pyw", ".c", ".cpp", ".js", ".java", ".sql", ".h", ".hpp", ".jsx", ".ts", ".tsx", ".class", ".go", ".rb", ".php", ".cs", ".swift", ".kt", ".rs", ".sh"],
             "year": false,
-            "file_type": false,
+            "file_type": 0,
             "min_gb": null,
             "max_gb": null
         },
@@ -80,7 +86,7 @@
             "path": "D:\\Downloads\\HTML",
             "extensions": [".html", ".htm"],
             "year": false,
-            "file_type": false,
+            "file_type": 0,
             "min_gb": null,
             "max_gb": null
         },
@@ -88,7 +94,7 @@
             "path": "D:\\Downloads\\Torrent",
             "extensions": [".torrent"],
             "year": false,
-            "file_type": false,
+            "file_type": 0,
             "min_gb": null,
             "max_gb": null
         },
@@ -96,7 +102,7 @@
             "path": "D:\\Downloads\\Others",
             "extensions": [],
             "year": false,
-            "file_type": false,
+            "file_type": 0,
             "min_gb": null,
             "max_gb": null
         }

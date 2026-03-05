@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sortify - File Routing Utility</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="/eel.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <header class="hero">
+            <h1>Sortify</h1>
+            <p>Smart, logic-gate file routing utility to keep your directories clean.</p>
+        </header>
+
+        <!-- Main Dashboard Form -->
+        <main class="dashboard">
+            <form id="sortForm">
+                <div class="form-group">
+                    <label for="target_dir">Source Directory Path</label>
+                    <input type="text" id="target_dir" name="target_dir" placeholder="e.g. C:\Users\Username\Downloads" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Destination Mode</label>
+                    <div class="glass-radio-group">
+                        <input type="radio" name="mode" id="mode-default" value="default" checked>
+                        <label for="mode-default">Default</label>
+                        
+                        <input type="radio" name="mode" id="mode-custom" value="custom">
+                        <label for="mode-custom">Custom</label>
+                        
+                        <input type="radio" name="mode" id="mode-revert" value="revert">
+                        <label for="mode-revert">Revert</label>
+                        
+                        <div class="glass-glider"></div>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="custom_target_group">
+                    <label for="custom_target">Custom/Revert Destination Path</label>
+                    <input type="text" id="custom_target" name="custom_target" placeholder="e.g. C:\Users\Username\Organized">
+                </div>
+
+                <div class="form-group checkbox-group" id="flatten_group">
+                    <span class="label-heading">Flatten Subfolders</span>
+                    <label class="toggle-container" for="flatten">
+                        <div class="toggle">
+                            <input type="checkbox" id="flatten" name="flatten" class="toggle-state">
+                            <div class="indicator"></div>
+                        </div>
+                    </label>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="m8 17 4 4 4-4"></path><path d="M12 13v8"></path></svg>
+                    <span>Sort Files</span>
+                </button>
+            </form>
+        </main>
+
+        <!-- Results Section -->
+        <section id="results" class="results-section hidden">
+            <div class="results-header">
+                <h2>Execution Log</h2>
+                <span id="resultCount" class="badge"></span>
+            </div>
+            <div id="resultMessage" class="result-message"></div>
+            <div class="log-container" id="logContainer">
+                <!-- Logs will be appended here -->
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

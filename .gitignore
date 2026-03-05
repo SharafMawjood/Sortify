@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 .DS_Store
 .venv/
+sortify/sortify_ui_design.md

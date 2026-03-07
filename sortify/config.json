@@ -97,7 +97,7 @@
         "Folders": {
             "path": "D:\\Archive\\Folders",
             "extensions": [],
-            "year": false,
+            "year": true,
             "file_type": 0,
             "min_gb": null,
             "max_gb": null

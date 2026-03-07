@@ -155,6 +155,18 @@ def sort_folder(folderpath: str | Path, config: dict, base_dir: str | Path | Non
         raise KeyError("No 'Folders' category defined in config.json")
 
     dest_dir = Path(routing["Folders"]["path"])
+
+    # If the routing rule specifies year=True, create a subfolder for the year
+    use_year_subfolder = routing["Folders"].get("year", False)
+    if use_year_subfolder:
+        stat = folderpath.stat()
+        try:
+            ctime = stat.st_birthtime
+        except AttributeError:
+            ctime = stat.st_ctime
+        year = datetime.datetime.fromtimestamp(ctime).year
+        dest_dir = dest_dir / str(year)
+
     if base_dir and not dest_dir.is_absolute():
         dest_dir = Path(base_dir) / dest_dir
     final = safe_move(folderpath, dest_dir)

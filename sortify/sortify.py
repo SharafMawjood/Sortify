@@ -322,6 +322,49 @@ def quick_sort(target_dir: Path, config: dict) -> None:
     input("  Press Enter to exit...")
 
 
+def sync_this_sort(target_dir: Path, config: dict) -> None:
+    print("\n╔══════════════════════════════════════════════╗")
+    print("║     SORTIFY — Sync This (Smart Flatten)      ║")
+    print("╚══════════════════════════════════════════════╝")
+    print(f"\n  Target directory: {target_dir}\n")
+    print("  ⏳  Processing…\n")
+
+    entries = sorted(target_dir.iterdir())
+    moved = 0
+
+    for entry in entries:
+        if entry.is_file():
+            moved += _sort_single_file(entry, config, custom_target=target_dir, base_dir=target_dir)
+        elif entry.is_dir():
+            if _is_folders_category(entry.name):
+                # Smart Flatten: collapse year subfolders, sort each original folder
+                _collapse_year_subfolders(entry)
+                for item in list(entry.iterdir()):
+                    if item.is_dir():
+                        dest_dir = target_dir / "Folders"
+                        dest = safe_move(item, dest_dir)
+                        if dest:
+                            print(f"  📁 {item.name}  →  [Folders] {dest}")
+                            moved += 1
+                    elif item.is_file():
+                        moved += _sort_single_file(item, config, custom_target=target_dir, base_dir=target_dir)
+                _remove_empty_dirs(entry)
+                try:
+                    if entry.exists() and not any(entry.iterdir()):
+                        entry.rmdir()
+                        print(f"  🗑  Removed empty folder: {entry.name}/")
+                except OSError:
+                    pass
+            else:
+                dest_dir = target_dir / "Folders"
+                dest = safe_move(entry, dest_dir)
+                if dest:
+                    print(f"  📁 {entry.name}  →  [Folders] {dest}")
+                    moved += 1
+
+    print(f"\n  ✅  Done! {moved} item(s) sorted in-place.\n")
+    input("  Press Enter to exit...")
+
 def flat_sort(target_dir: Path) -> None:
     print("\n╔══════════════════════════════════════════════╗")
     print("║       SORTIFY — Flat (Smart Flatten)         ║")
@@ -392,6 +435,11 @@ def main() -> None:
         help="Sort files in-place within the target directory (creates category subfolders)",
     )
     parser.add_argument(
+        "--sync-this",
+        action="store_true",
+        help="Like --quick-sort but with Smart Flatten (keeps Folders/ contents intact)",
+    )
+    parser.add_argument(
         "--flat",
         action="store_true",
         help="Flatten all subfolders in-place (Smart Flatten: keeps original folders from Folders/ intact)",
@@ -429,6 +477,12 @@ def main() -> None:
             print(f"  ❌  Not a valid directory: {target}")
             sys.exit(1)
         quick_sort(target, config)
+    elif args.sync_this:
+        target = Path(args.directory).resolve()
+        if not target.is_dir():
+            print(f"  ❌  Not a valid directory: {target}")
+            sys.exit(1)
+        sync_this_sort(target, config)
     elif args.flat:
         target = Path(args.directory).resolve()
         if not target.is_dir():

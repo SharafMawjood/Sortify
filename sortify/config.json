@@ -49,7 +49,7 @@
         "Compressed": {
             "path": "D:\\Archive\\Compressed",
             "extensions": [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2"],
-            "year": false,
+            "year": true,
             "file_type": 0,
             "min_gb": null,
             "max_gb": null

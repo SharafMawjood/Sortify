@@ -321,6 +321,56 @@ def quick_sort(target_dir: Path, config: dict) -> None:
     print(f"\n  ✅  Done! {moved} item(s) sorted in-place.\n")
     input("  Press Enter to exit...")
 
+
+def flat_sort(target_dir: Path) -> None:
+    print("\n╔══════════════════════════════════════════════╗")
+    print("║       SORTIFY — Flat (Smart Flatten)         ║")
+    print("╚══════════════════════════════════════════════╝")
+    print(f"\n  Target directory: {target_dir}\n")
+    print("  ⏳  Processing…\n")
+
+    moved = 0
+
+    for entry in list(target_dir.iterdir()):
+        if not entry.is_dir():
+            continue
+
+        if _is_folders_category(entry.name):
+            # Smart Flatten: collapse year subfolders, then move original folders up
+            _collapse_year_subfolders(entry)
+            for item in list(entry.iterdir()):
+                dest = safe_move(item, target_dir)
+                if dest:
+                    if item.is_dir():
+                        print(f"  📁 {item.name}  ←  extracted from {entry.name}/")
+                    else:
+                        print(f"  📄 {item.name}  ←  extracted from {entry.name}/")
+                    moved += 1
+            # Remove the now-empty Folders container
+            try:
+                if entry.exists() and not any(entry.iterdir()):
+                    entry.rmdir()
+                    print(f"  🗑  Removed container: {entry.name}/")
+            except OSError:
+                pass
+        else:
+            # Regular flatten: extract all files from subfolders
+            for f in _collect_all_files(entry):
+                dest = safe_move(f, target_dir)
+                if dest:
+                    print(f"  📄 {f.name}  ←  extracted from {entry.name}/")
+                    moved += 1
+            _remove_empty_dirs(entry)
+            try:
+                if entry.exists() and not any(entry.iterdir()):
+                    entry.rmdir()
+                    print(f"  🗑  Removed empty folder: {entry.name}/")
+            except OSError:
+                pass
+
+    print(f"\n  ✅  Done! {moved} item(s) flattened.\n")
+    input("  Press Enter to exit...")
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Sortify — Logic-Gate File Routing CLI",
@@ -332,7 +382,7 @@ def main() -> None:
         help="Directory to sort (default: current dir)",
     )
     parser.add_argument(
-        "--sync",
+        "--sync-default",
         action="store_true",
         help="Re-sort all files already in routing destinations",
     )
@@ -340,6 +390,11 @@ def main() -> None:
         "--quick-sort",
         action="store_true",
         help="Sort files in-place within the target directory (creates category subfolders)",
+    )
+    parser.add_argument(
+        "--flat",
+        action="store_true",
+        help="Flatten all subfolders in-place (Smart Flatten: keeps original folders from Folders/ intact)",
     )
     parser.add_argument(
         "--custom-config",
@@ -366,7 +421,7 @@ def main() -> None:
 
     config = load_config(args.custom_config)
 
-    if args.sync:
+    if args.sync_default:
         sync_sort(config)
     elif args.quick_sort:
         target = Path(args.directory).resolve()
@@ -374,6 +429,12 @@ def main() -> None:
             print(f"  ❌  Not a valid directory: {target}")
             sys.exit(1)
         quick_sort(target, config)
+    elif args.flat:
+        target = Path(args.directory).resolve()
+        if not target.is_dir():
+            print(f"  ❌  Not a valid directory: {target}")
+            sys.exit(1)
+        flat_sort(target)
     else:
         target = Path(args.directory).resolve()
         if not target.is_dir():

@@ -298,6 +298,29 @@ def sync_sort(config: dict) -> None:
     input("  Press Enter to exit...")
 
 
+def quick_sort(target_dir: Path, config: dict) -> None:
+    print("\n╔══════════════════════════════════════════════╗")
+    print("║       SORTIFY — Quick Sort (In-Place)        ║")
+    print("╚══════════════════════════════════════════════╝")
+    print(f"\n  Target directory: {target_dir}\n")
+    print("  ⏳  Processing…\n")
+
+    entries = sorted(target_dir.iterdir())
+    moved = 0
+
+    for entry in entries:
+        if entry.is_file():
+            moved += _sort_single_file(entry, config, custom_target=target_dir, base_dir=target_dir)
+        elif entry.is_dir():
+            dest_dir = target_dir / "Folders"
+            dest = safe_move(entry, dest_dir)
+            if dest:
+                print(f"  📁 {entry.name}  →  [Folders] {dest}")
+                moved += 1
+
+    print(f"\n  ✅  Done! {moved} item(s) sorted in-place.\n")
+    input("  Press Enter to exit...")
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Sortify — Logic-Gate File Routing CLI",
@@ -312,6 +335,11 @@ def main() -> None:
         "--sync",
         action="store_true",
         help="Re-sort all files already in routing destinations",
+    )
+    parser.add_argument(
+        "--quick-sort",
+        action="store_true",
+        help="Sort files in-place within the target directory (creates category subfolders)",
     )
     parser.add_argument(
         "--custom-config",
@@ -340,6 +368,12 @@ def main() -> None:
 
     if args.sync:
         sync_sort(config)
+    elif args.quick_sort:
+        target = Path(args.directory).resolve()
+        if not target.is_dir():
+            print(f"  ❌  Not a valid directory: {target}")
+            sys.exit(1)
+        quick_sort(target, config)
     else:
         target = Path(args.directory).resolve()
         if not target.is_dir():

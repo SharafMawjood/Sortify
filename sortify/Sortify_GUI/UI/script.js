@@ -5,7 +5,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const customTargetInput = document.getElementById('custom_target');
     const flattenGroup = document.getElementById('flatten_group');
     const flattenCheckbox = document.getElementById('flatten');
+    const smartFlattenGroup = document.getElementById('smart_flatten_group');
+    const smartFlattenCheckbox = document.getElementById('smart_flatten');
     const submitBtn = document.getElementById('submitBtn');
+    const configBtn = document.getElementById('configBtn');
+    
+    // Open config file
+    configBtn.addEventListener('click', () => {
+        eel.open_config()((response) => {
+            if (!response.success) {
+                showError(response.error);
+            }
+        });
+    });
     
     const resultsSection = document.getElementById('results');
     const resultMessage = document.getElementById('resultMessage');
@@ -24,6 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (mode === 'revert') {
                     flattenGroup.classList.add('hidden');
                     flattenCheckbox.checked = false;
+                    smartFlattenGroup.classList.add('hidden');
+                    smartFlattenCheckbox.checked = true;
                 } else {
                     flattenGroup.classList.remove('hidden');
                 }
@@ -34,6 +48,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 flattenGroup.classList.remove('hidden');
             }
         });
+    });
+
+    // Toggle Smart Flatten visibility based on Flatten checkbox
+    flattenCheckbox.addEventListener('change', () => {
+        if (flattenCheckbox.checked) {
+            smartFlattenGroup.classList.remove('hidden');
+        } else {
+            smartFlattenGroup.classList.add('hidden');
+            smartFlattenCheckbox.checked = true; // Reset to default
+        }
     });
 
     sortForm.addEventListener('submit', async (e) => {
@@ -50,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mode = document.querySelector('input[name="mode"]:checked').value;
         const customTarget = document.getElementById('custom_target').value;
         const flatten = document.getElementById('flatten').checked;
+        const smartFlatten = document.getElementById('smart_flatten').checked;
         
         // Basic validation
         if (!targetDir) return;
@@ -63,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // Call Python function via Eel
-            const data = await eel.api_sort(targetDir, mode, customTarget, flatten)();
+            const data = await eel.api_sort(targetDir, mode, customTarget, flatten, smartFlatten)();
 
             if (data.error) {
                 throw new Error(data.error);

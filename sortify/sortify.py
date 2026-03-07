@@ -30,6 +30,25 @@ def _remove_empty_dirs(directory: Path) -> None:
                 pass
 
 
+def _is_folders_category(name: str) -> bool:
+    return name.lower() in ("folders", "folder")
+
+
+def _collapse_year_subfolders(folders_dir: Path) -> None:
+    for item in list(folders_dir.iterdir()):
+        if item.is_dir() and item.name.isdigit() and len(item.name) == 4:
+            for child in list(item.iterdir()):
+                dest = safe_move(child, folders_dir)
+                if dest:
+                    print(f"  📂 {child.name}  ←  collapsed from {item.name}/")
+            try:
+                if item.exists() and not any(item.iterdir()):
+                    item.rmdir()
+                    print(f"  🗑  Removed year folder: {item}")
+            except OSError:
+                pass
+
+
 def interactive_sort(target_dir: Path, config: dict) -> None:
     print("\n╔══════════════════════════════════════════════╗")
     print("║        SORTIFY — File Routing CLI            ║")
@@ -59,8 +78,11 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
         revert_target.mkdir(parents=True, exist_ok=True)
 
     flatten = False
+    smart_flatten = False
     if choice != "3":
         flatten = input("\n  Flatten subfolders? (y/n) [default=n]: ").strip().lower() == "y"
+        if flatten:
+            smart_flatten = input("  Use Smart Flatten? (y/n) [default=y]: ").strip().lower() != "n"
 
     print("\n  ⏳  Processing…\n")
 
@@ -121,8 +143,28 @@ def interactive_sort(target_dir: Path, config: dict) -> None:
 
         elif entry.is_dir():
             if flatten:
-                for f in _collect_all_files(entry):
-                    moved += _sort_single_file(f, config, custom_target, target_dir)
+                if smart_flatten and _is_folders_category(entry.name):
+                    # Smart Flatten: collapse year subfolders but keep original folders intact
+                    _collapse_year_subfolders(entry)
+                    for item in list(entry.iterdir()):
+                        if item.is_dir():
+                            if custom_target:
+                                dest_dir = custom_target / "Folders"
+                                dest = safe_move(item, dest_dir)
+                                if dest:
+                                    print(f"  📁 {item.name}  →  [Folders] {dest}")
+                                    moved += 1
+                            else:
+                                cat, dest = sort_folder(item, config, base_dir=target_dir)
+                                if dest:
+                                    print(f"  📁 {item.name}  →  [{cat}] {dest}")
+                                    moved += 1
+                        elif item.is_file():
+                            moved += _sort_single_file(item, config, custom_target, target_dir)
+                else:
+                    # Regular flatten: extract all files
+                    for f in _collect_all_files(entry):
+                        moved += _sort_single_file(f, config, custom_target, target_dir)
                 _remove_empty_dirs(entry)
                 try:
                     if entry.exists() and not any(entry.iterdir()):
@@ -201,20 +243,33 @@ def sync_sort(config: dict) -> None:
     print("╚══════════════════════════════════════════════╝\n")
 
     all_files: list[Path] = []
+    folders_to_sort: list[Path] = []
 
     for cat, rules in routing.items():
         cat_path = Path(rules["path"])
-        if cat_path.is_dir():
+        if not cat_path.is_dir():
+            continue
+
+        if _is_folders_category(cat):
+            # Smart Flatten: collapse year subfolders and collect folders as intact units
+            _collapse_year_subfolders(cat_path)
+            for item in cat_path.iterdir():
+                if item.is_dir():
+                    folders_to_sort.append(item)
+        else:
             for f in _collect_all_files(cat_path):
                 all_files.append(f)
 
-    if not all_files:
-        print("  No files found in any routing destination. Nothing to sync.\n")
+    total_items = len(all_files) + len(folders_to_sort)
+    if total_items == 0:
+        print("  No items found in any routing destination. Nothing to sync.\n")
         return
 
-    print(f"  Found {len(all_files)} file(s) across all destinations.\n")
+    print(f"  Found {len(all_files)} file(s) and {len(folders_to_sort)} folder(s) across all destinations.\n")
 
     moved = 0
+
+    # Re-sort individual files (non-Folders categories)
     for f in all_files:
         try:
             cat, dest = sort_file(f, config)
@@ -224,12 +279,22 @@ def sync_sort(config: dict) -> None:
         except Exception as exc:
             print(f"  ⚠  Failed to re-sort {f.name}: {exc}")
 
+    # Re-sort intact folders (Folders category)
+    for folder in folders_to_sort:
+        try:
+            cat, dest = sort_folder(folder, config)
+            if dest and dest.parent != folder.parent:
+                print(f"  🔄 📁 {folder.name}  →  [{cat}] {dest}")
+                moved += 1
+        except Exception as exc:
+            print(f"  ⚠  Failed to re-sort folder {folder.name}: {exc}")
+
     for cat, rules in routing.items():
         cat_path = Path(rules["path"])
         if cat_path.is_dir():
             _remove_empty_dirs(cat_path)
 
-    print(f"\n  ✅  Sync complete! {moved} file(s) re-routed.\n")
+    print(f"\n  ✅  Sync complete! {moved} item(s) re-routed.\n")
     input("  Press Enter to exit...")
 
 
@@ -249,13 +314,29 @@ def main() -> None:
         help="Re-sort all files already in routing destinations",
     )
     parser.add_argument(
-        "--config",
+        "--custom-config",
         default=str(DEFAULT_CONFIG),
         help="Path to a custom config.json (default: config.json next to this script)",
     )
+    parser.add_argument(
+        "--config",
+        action="store_true",
+        help="Open the configuration file in the default editor",
+    )
 
     args = parser.parse_args()
-    config = load_config(args.config)
+    
+    if args.config:
+        config_path = Path(args.custom_config).resolve()
+        print(f"\n  📂  Opening configuration file: {config_path}")
+        try:
+            os.startfile(config_path)
+            sys.exit(0)
+        except Exception as e:
+            print(f"  ❌  Failed to open config: {e}")
+            sys.exit(1)
+
+    config = load_config(args.custom_config)
 
     if args.sync:
         sync_sort(config)

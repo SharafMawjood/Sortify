@@ -30,6 +30,20 @@ def _remove_empty_dirs(directory: Path) -> None:
             except OSError:
                 pass
 
+def _is_folders_category(name: str) -> bool:
+    return name.lower() in ("folders", "folder")
+
+def _collapse_year_subfolders(folders_dir: Path) -> None:
+    for item in list(folders_dir.iterdir()):
+        if item.is_dir() and item.name.isdigit() and len(item.name) == 4:
+            for child in list(item.iterdir()):
+                dest = safe_move(child, folders_dir)
+            try:
+                if item.exists() and not any(item.iterdir()):
+                    item.rmdir()
+            except OSError:
+                pass
+
 def _sort_single_file(filepath: Path, config: dict, custom_target: Path | None, base_dir: Path | None = None) -> dict:
     result = {"name": filepath.name, "success": False, "category": "Error", "dest": None, "error": None}
     try:
@@ -72,9 +86,17 @@ def _sort_single_file(filepath: Path, config: dict, custom_target: Path | None, 
         result["error"] = str(exc)
         
     return result
+    
+@eel.expose
+def open_config():
+    try:
+        os.startfile(DEFAULT_CONFIG_PATH)
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 @eel.expose
-def api_sort(target_dir_str, mode, custom_target_str, flatten):
+def api_sort(target_dir_str, mode, custom_target_str, flatten, smart_flatten=True):
     target_dir_str = target_dir_str.strip().strip('"')
     mode = mode or "default"
     custom_target_str = custom_target_str.strip().strip('"')
@@ -158,11 +180,37 @@ def api_sort(target_dir_str, mode, custom_target_str, flatten):
             logs.append(res)
         elif entry.is_dir():
             if flatten:
-                for f in _collect_all_files(entry):
-                    res = _sort_single_file(f, config, custom_target, target_dir)
-                    if res["success"]:
-                        moved_count += 1
-                    logs.append(res)
+                if smart_flatten and _is_folders_category(entry.name):
+                    # Smart Flatten: collapse year subfolders but keep original folders intact
+                    _collapse_year_subfolders(entry)
+                    for item in list(entry.iterdir()):
+                        if item.is_dir():
+                            if custom_target:
+                                dest_dir = custom_target / "Folders"
+                                dest = safe_move(item, dest_dir)
+                                if dest:
+                                    moved_count += 1
+                                    logs.append({"name": item.name, "success": True, "category": "Folders", "dest": str(dest)})
+                            else:
+                                try:
+                                    cat, dest = sort_folder(item, config, base_dir=target_dir)
+                                    if dest:
+                                        moved_count += 1
+                                        logs.append({"name": item.name, "success": True, "category": cat, "dest": str(dest)})
+                                except Exception as e:
+                                    logs.append({"name": item.name, "success": False, "category": "Error", "error": str(e)})
+                        elif item.is_file():
+                            res = _sort_single_file(item, config, custom_target, target_dir)
+                            if res["success"]:
+                                moved_count += 1
+                            logs.append(res)
+                else:
+                    # Regular flatten: extract all files
+                    for f in _collect_all_files(entry):
+                        res = _sort_single_file(f, config, custom_target, target_dir)
+                        if res["success"]:
+                            moved_count += 1
+                        logs.append(res)
                 _remove_empty_dirs(entry)
                 try:
                     if entry.exists() and not any(entry.iterdir()):

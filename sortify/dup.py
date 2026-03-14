@@ -74,7 +74,7 @@ def safe_mkdir(target_dir: Path, name: str) -> Path:
         counter += 1
 
 
-def find_duplicates(target_dir: Path, deep: bool = False, individual: bool = False) -> None:
+def find_duplicates(target_dir: Path, deep: bool = False, individual: bool = False, group: bool = False) -> None:
     print("\n╔══════════════════════════════════════════════╗")
     print("║          DUP — Duplicate Finder              ║")
     print("╚══════════════════════════════════════════════╝")
@@ -85,7 +85,9 @@ def find_duplicates(target_dir: Path, deep: bool = False, individual: bool = Fal
         mode_str = "Deep + Individual (files inside subdirs)"
     elif deep:
         mode_str = "Deep (subdirs as single objects)"
-    print(f"  Mode: {mode_str}\n")
+    action_str = "Group into folders" if group else "Delete oldest"
+    print(f"  Mode: {mode_str}")
+    print(f"  Action: {action_str}\n")
     print("  ⏳  Hashing files…\n")
 
     # Collect items and compute hashes
@@ -136,46 +138,74 @@ def find_duplicates(target_dir: Path, deep: bool = False, individual: bool = Fal
     total_items = sum(len(items) for items in duplicate_groups.values())
     print(f"  Found {total_groups} duplicate group(s) ({total_items} items total).\n")
 
-    moved = 0
+    if not group:
+        # --- DELETE MODE (default): keep newest, delete oldest ---
+        deleted = 0
 
-    for group_hash, items in duplicate_groups.items():
-        # Get names (stems for files, names for dirs)
-        names = []
-        for item in items:
-            if item.is_file():
-                names.append(item.stem)
-            else:
-                names.append(item.name)
+        for group_hash, items in duplicate_groups.items():
+            # Sort by modification time (oldest first), keep the newest
+            items.sort(key=lambda p: p.stat().st_mtime)
+            keeper = items[-1]
+            to_delete = items[:-1]
 
-        # Find common prefix
-        common = longest_common_prefix(names)
-        if not common:
-            # Fallback: use first file's stem
-            common = names[0] if names else f"dup_{group_hash[:8]}"
+            print(f"  📂 Duplicate group (hash: {group_hash[:8]}…)")
+            print(f"     ✅ Keeping (newest): {keeper.name}")
 
-        # Create the group folder
-        group_folder = safe_mkdir(target_dir, common)
-        print(f"  📂 Group: {group_folder.name}/")
+            for item in to_delete:
+                try:
+                    if item.is_dir():
+                        shutil.rmtree(str(item))
+                    else:
+                        item.unlink()
+                    print(f"     🗑️  Deleted: {item.name}")
+                    deleted += 1
+                except Exception as e:
+                    print(f"     ⚠  Failed to delete {item.name}: {e}")
 
-        # Move all duplicates into the folder
-        for item in items:
-            try:
-                dest = group_folder / item.name
-                if dest.exists():
-                    # Handle name collision within the group folder
-                    stem = item.stem
-                    suffix = item.suffix
-                    counter = 1
-                    while dest.exists():
-                        dest = group_folder / f"{stem}_{counter}{suffix}"
-                        counter += 1
-                shutil.move(str(item), str(dest))
-                print(f"     ↳ {item.name}")
-                moved += 1
-            except Exception as e:
-                print(f"     ⚠  Failed to move {item.name}: {e}")
+        print(f"\n  ✅  Done! Deleted {deleted} duplicate(s) across {total_groups} group(s).\n")
+    else:
+        # --- FOLDER MODE (--group): group duplicates into folders ---
+        moved = 0
 
-    print(f"\n  ✅  Done! {moved} item(s) grouped into {total_groups} folder(s).\n")
+        for group_hash, items in duplicate_groups.items():
+            # Get names (stems for files, names for dirs)
+            names = []
+            for item in items:
+                if item.is_file():
+                    names.append(item.stem)
+                else:
+                    names.append(item.name)
+
+            # Find common prefix
+            common = longest_common_prefix(names)
+            if not common:
+                # Fallback: use first file's stem
+                common = names[0] if names else f"dup_{group_hash[:8]}"
+
+            # Create the group folder
+            group_folder = safe_mkdir(target_dir, common)
+            print(f"  📂 Group: {group_folder.name}/")
+
+            # Move all duplicates into the folder
+            for item in items:
+                try:
+                    dest = group_folder / item.name
+                    if dest.exists():
+                        # Handle name collision within the group folder
+                        stem = item.stem
+                        suffix = item.suffix
+                        counter = 1
+                        while dest.exists():
+                            dest = group_folder / f"{stem}_{counter}{suffix}"
+                            counter += 1
+                    shutil.move(str(item), str(dest))
+                    print(f"     ↳ {item.name}")
+                    moved += 1
+                except Exception as e:
+                    print(f"     ⚠  Failed to move {item.name}: {e}")
+
+        print(f"\n  ✅  Done! {moved} item(s) grouped into {total_groups} folder(s).\n")
+
     input("  Press Enter to exit...")
 
 
@@ -199,6 +229,11 @@ def main() -> None:
         action="store_true",
         help="With --deep, treat files inside subdirs individually instead of comparing whole dirs",
     )
+    parser.add_argument(
+        "--group",
+        action="store_true",
+        help="Group duplicates into folders instead of deleting the oldest (default deletes oldest, keeps newest)",
+    )
 
     args = parser.parse_args()
 
@@ -211,7 +246,7 @@ def main() -> None:
         print("  ⚠  --individual requires --deep. Enabling --deep automatically.\n")
         args.deep = True
 
-    find_duplicates(target, deep=args.deep, individual=args.individual)
+    find_duplicates(target, deep=args.deep, individual=args.individual, group=args.group)
 
 
 if __name__ == "__main__":
